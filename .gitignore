@@ -1,0 +1,8 @@
+# Android signing key — never commit this. See ANDROID_APK.md.
+android/android.keystore
+*.keystore
+*.jks
+
+# OS/editor cruft
+.DS_Store
+Thumbs.db

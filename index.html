@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<script>(function(){try{if(localStorage.getItem("mr_theme")==="dark"){document.documentElement.dataset.theme="dark";}}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Meeting Register</title>
+<meta name="description" content="Log and schedule the boss's meetings, virtual or physical, in one searchable register." />
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#0F172A" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Register" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="offlineBanner" class="banner" hidden>
+  <span data-i18n="offlineBanner">You're offline — showing the last saved register. Changes will sync once you're back online.</span>
+</div>
+<div id="setupBanner" class="banner banner-action" hidden>
+  <span data-i18n="setupBannerText">Not connected to a Google Sheet yet.</span>
+  <button id="setupBannerBtn" class="link-btn" data-i18n="connectNow">Connect now</button>
+</div>
+
+<div id="app">
+  <header class="masthead">
+    <div class="mast-left">
+      <div class="seal" aria-hidden="true">MR</div>
+      <div>
+        <h1 data-i18n="appTitle">Meeting Register</h1>
+        <p class="subtitle">
+          <span id="todayLabel">—</span>
+          <span class="status-sep" aria-hidden="true">·</span>
+          <span id="statusDot" class="status-dot"></span>
+          <span id="statusText">Not connected</span>
+        </p>
+      </div>
+    </div>
+    <div class="mast-right">
+      <button id="langToggleBtn" class="btn btn-ghost" title="ভাষা পরিবর্তন করুন / Switch language" aria-label="Switch language">
+        <span id="langToggleLabel">বাং</span>
+      </button>
+      <button id="themeToggleBtn" class="btn btn-icon" title="Toggle dark mode" aria-label="Toggle dark mode">
+        <svg id="themeIconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        <svg id="themeIconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      </button>
+      <button id="exportBtn" class="btn btn-ghost" title="Export visible entries to CSV">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+        <span data-i18n="export">Export</span>
+      </button>
+      <button id="installBtn" class="btn btn-ghost" hidden>
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        <span data-i18n="installApp">Install app</span>
+      </button>
+      <button id="settingsBtn" class="btn btn-icon" title="Connection settings" aria-label="Connection settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      </button>
+      <button id="newBtn" class="btn btn-primary">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <span data-i18n="newEntry">New entry</span>
+      </button>
+    </div>
+  </header>
+
+  <section class="stats-strip" aria-label="Register summary">
+    <div class="stat-card">
+      <span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></span>
+      <div><span class="stat-value" id="statTotal">0</span><span class="stat-label" data-i18n="statTotal">Total logged</span></div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></span>
+      <div><span class="stat-value" id="statUpcoming">0</span><span class="stat-label" data-i18n="upcoming">Upcoming</span></div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"></path><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg></span>
+      <div><span class="stat-value" id="statVirtual">0</span><span class="stat-label" data-i18n="virtual">Virtual</span></div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></span>
+      <div><span class="stat-value" id="statPhysical">0</span><span class="stat-label" data-i18n="physical">Physical</span></div>
+    </div>
+  </section>
+
+  <section class="control-strip">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input id="searchInput" type="search" placeholder="Search topic or location…" aria-label="Search meetings" data-i18n-placeholder="searchPlaceholder" />
+    </div>
+    <div class="tabs" id="typeTabs" role="tablist" aria-label="Filter by type">
+      <button class="tab active" data-type="all" data-i18n="all">All</button>
+      <button class="tab" data-type="virtual" data-i18n="virtual">Virtual</button>
+      <button class="tab" data-type="physical" data-i18n="physical">Physical</button>
+    </div>
+    <div class="tabs" id="timeTabs" role="tablist" aria-label="Filter by time">
+      <button class="tab active" data-time="upcoming" data-i18n="upcoming">Upcoming</button>
+      <button class="tab" data-time="past" data-i18n="past">Past</button>
+      <button class="tab" data-time="all" data-i18n="allDates">All dates</button>
+    </div>
+  </section>
+
+  <div id="bulkBar" class="bulk-bar" hidden>
+    <span id="bulkCount">0 selected</span>
+    <span class="bulk-bar-spacer"></span>
+    <button id="bulkDeleteBtn" class="btn btn-danger-outline" data-i18n="deleteSelected">Delete selected</button>
+    <button id="bulkClearBtn" class="btn btn-text" data-i18n="clear">Clear</button>
+  </div>
+
+  <div class="register-page">
+    <div class="register-header" id="registerHeader">
+      <input type="checkbox" id="selectAllCheckbox" class="row-select" aria-label="Select all visible" />
+      <span data-i18n="colNo">No.</span>
+      <button class="sort-head" data-sort="topic"><span data-i18n="colTopic">Topic &amp; location</span><span class="sort-arrow"></span></button>
+      <button class="sort-head" data-sort="when"><span data-i18n="colWhen">When</span><span class="sort-arrow"></span></button>
+      <span data-i18n="colType">Type</span>
+      <span data-i18n="colAttachment">Attachment</span>
+      <span class="sr-only">Actions</span>
+    </div>
+
+    <main id="registerBody" aria-live="polite">
+      <!-- entries injected here -->
+    </main>
+  </div>
+</div>
+
+<!-- Entry modal (create / edit) -->
+<dialog id="entryModal" class="modal">
+  <form id="entryForm" method="dialog" novalidate>
+    <div class="modal-head">
+      <h2 id="entryModalTitle">New entry</h2>
+      <button type="button" class="icon-btn" id="closeEntryModal" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+    </div>
+
+    <input type="hidden" id="entryId" />
+
+    <label class="field">
+      <span data-i18n="meetingTopic">Meeting topic</span>
+      <input id="fieldTopic" type="text" placeholder="e.g. Quarterly budget review" required maxlength="140" data-i18n-placeholder="topicPlaceholder" />
+    </label>
+
+    <div class="field-row">
+      <label class="field">
+        <span data-i18n="date">Date</span>
+        <div class="input-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          <input id="fieldDate" type="text" placeholder="e.g. 14/08/2026" required maxlength="60" data-i18n-placeholder="datePlaceholder" />
+        </div>
+      </label>
+      <label class="field">
+        <span><span data-i18n="time">Time</span> <em data-i18n="optional">(optional)</em></span>
+        <div class="input-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <input id="fieldTime" type="text" placeholder="e.g. 05:00 PM" maxlength="60" />
+        </div>
+      </label>
+    </div>
+
+    <div class="field-row">
+      <label class="field">
+        <span data-i18n="type">Type</span>
+        <select id="fieldType">
+          <option value="virtual" data-i18n="virtual">Virtual</option>
+          <option value="physical" data-i18n="physical">Physical</option>
+        </select>
+      </label>
+      <label class="field">
+        <span id="fieldWhereLabel" data-i18n="meetingLink">Meeting link</span>
+        <input id="fieldWhere" type="text" placeholder="e.g. Google Meet link" required maxlength="200" />
+      </label>
+    </div>
+
+    <label class="field">
+      <span><span data-i18n="attachment">Attachment</span> <em data-i18n="attachmentHint">(optional, max 5MB)</em></span>
+      <input id="fieldFile" type="file" />
+      <div id="existingFile" class="existing-file" hidden>
+        <a id="existingFileLink" target="_blank" rel="noopener"></a>
+        <button type="button" id="removeFileBtn" class="link-btn" data-i18n="remove">Remove</button>
+      </div>
+    </label>
+
+    <p id="entryError" class="form-error" hidden></p>
+
+    <div class="modal-actions">
+      <button type="button" class="btn btn-text" id="cancelEntry" data-i18n="cancel">Cancel</button>
+      <button type="submit" class="btn btn-primary" id="saveEntryBtn" data-i18n="saveEntry">Save entry</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Delete confirm -->
+<dialog id="deleteModal" class="modal modal-small">
+  <div class="modal-head">
+    <h2 id="deleteModalTitle">Remove this entry?</h2>
+  </div>
+  <p class="modal-copy" id="deleteModalCopy">This deletes the row from your Google Sheet. It can't be undone from here, though you'll get a moment to undo right after.</p>
+  <div class="modal-actions">
+    <button type="button" class="btn btn-text" id="cancelDelete" data-i18n="cancel">Cancel</button>
+    <button type="button" class="btn btn-danger" id="confirmDelete" data-i18n="deleteBtn">Delete</button>
+  </div>
+</dialog>
+
+<!-- Settings modal -->
+<dialog id="settingsModal" class="modal">
+  <div class="modal-head">
+    <h2 data-i18n="connectionSettings">Connection settings</h2>
+    <button type="button" class="icon-btn" id="closeSettingsModal" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+  </div>
+  <p class="modal-copy">
+    Paste the Web App URL from your deployed Apps Script (see <code>SETUP.md</code>).
+  </p>
+  <label class="field">
+    <span>Apps Script Web App URL</span>
+    <input id="apiUrlInput" type="url" placeholder="https://script.google.com/macros/s/…/exec" />
+  </label>
+  <p id="settingsError" class="form-error" hidden></p>
+  <p id="settingsSuccess" class="form-success" hidden>Connected — meetings loaded.</p>
+  <div class="modal-actions">
+    <button type="button" class="btn btn-text" id="cancelSettings" data-i18n="cancel">Cancel</button>
+    <button type="button" class="btn btn-primary" id="saveSettingsBtn">Save &amp; connect</button>
+  </div>
+</dialog>
+
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>
